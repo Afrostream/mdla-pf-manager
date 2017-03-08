@@ -1,0 +1,201 @@
+<!doctype html >
+<html ng-app="clientPF">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+            integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+            crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified CSS -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <style>
+        .btn {
+            margin: 0.2em;
+        }
+    </style>
+</head>
+<body ng-controller="ClientPFController">
+<h1>MNDL PF API</h1>
+<div id="app">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="panel-heading"><h3 class="panel-title">Broadcasters</h3></div>
+                        <button class="btn btn-primary" ng-repeat="broadcaster in broadcasters">{{ broadcaster.name }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="panel-heading"><h3 class="panel-title">Providers</h3></div>
+                        <a href="/api/providers/{{provider._id}}" class="btn btn-default" role="button"
+                           ng-repeat="provider in providers">
+                            {{ provider._id }}
+                            {{provider.name }}
+                            <span ng-repeat="bc in provider.bradcasters">{{ bc.name }}</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="panel-heading"><h3 class="panel-title">Contents</h3></div>
+                        <ul class="list-group">
+                            <li class="list-group-item" ng-repeat="content in contents">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="contentUrl">ContentUrl</label>
+                                        <input class="form-control" id="contentUrl" ng-model="content.contentUrl"
+                                               type="text"
+                                               value="{{ content.contentUrl }}"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-default btn-xs" role="button"
+                                                data-toggle="button"
+                                                ng-model="providerSelect"
+                                                aria-pressed="broadcasters"
+                                                ng-click="updateContentBroadcaster(content,broadcaster,$event)"
+                                                ng-repeat="broadcaster in broadcasters">
+                                            {{broadcaster.name }}
+                                            <span ng-repeat="bc in provider.broadcasters">{{ bc.name }}</span>
+                                        </button>
+
+                                        <span ng-repeat="bc in content.broadcasters">{{ bc.name }}</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn" ng-click="getContentMediaInfo(content)">
+                                            Get MediaInfos
+                                        </button>
+                                        <button class="btn btn-warning" ng-click="trancode(content)">
+                                            Transcode
+                                        </button>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-default" data-toggle="collapse"
+                                                data-target="#collapseMedia">Show MediaInfos
+                                        </button>
+                                        <div class="collapse" id="collapseMedia">
+                                            <pre>{{ content.mediaInfo | json}}</pre>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-inline" ng-repeat="job in content.jobs">
+                                        <label>Job {{job._id}} Status</label>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar"
+                                                 aria-valuenow="getProgressStatus(job)"
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{job.status}}
+                                            </div>
+                                        </div>
+                                        <button ng-click="deleteJob(job)">Delete Job</button>
+                                    </div>
+                                </form>
+                            </li>
+                        </ul>
+                        <button class="btn btn-primary" ng-click="addContent()">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+  angular.module('clientPF', [])
+    .controller('ClientPFController', ['$scope', '$http', function ($scope, $http) {
+
+      $scope.broadcasters = [];
+      $scope.providers = [];
+      $scope.contents = [];
+
+      $http.get('api/broadcasters')
+        .then(function (response) {
+          $scope.broadcasters = response.data;
+        });
+      $http.get('api/providers')
+        .then(function (response) {
+          $scope.providers = response.data;
+        });
+
+      $scope.getContent = function () {
+        $http.get('api/contents')
+          .then(function (response) {
+            $scope.contents = response.data;
+          });
+      };
+
+      $scope.addContent = function () {
+        $http.post('api/contents', {
+          contentId: $scope.contents.length + 1
+        })
+          .then(function () {
+            $scope.getContent()
+          });
+      };
+
+      $scope.updateContent = function (item) {
+        $http.put('api/contents/' + item._id, item)
+          .then(function () {
+            $scope.getContent()
+          });
+      };
+
+      $scope.updateContentBroadcaster = function (item, bc, $event) {
+        if (!item.broadcasters) {
+          item.broadcasters = [];
+        }
+        item.broadcasters.push(bc);
+        $http.put('api/contents/' + item._id, item)
+          .then(function () {
+            $scope.getContent()
+          });
+      };
+
+      $scope.getContentMediaInfo = function (content, url) {
+        $http.get('api/contents/mediaInfo?url=' + content.contentUrl)
+          .then(function (response) {
+            content = angular.extend(content, {mediaInfo: response.data});
+            $scope.updateContent(content)
+          });
+      };
+
+      $scope.trancode = function (content) {
+        $http.post('api/jobs', {contentId: content._id}).then(function () {
+          $scope.getContent()
+        });
+      };
+
+      $scope.deleteJob = function (job) {
+        $http.delete('api/jobs/' + job._id).then(function () {
+          $scope.getContent()
+        });
+      };
+
+      $scope.getProgressStatus = function (job) {
+        //$http.get('api/jobs/' + job._id)
+        var statusPercent = 0;
+        switch (job.status) {
+          case 'success':
+            statusPercent = 100;
+            break;
+        }
+        return statusPercent;
+      };
+
+      $scope.getContent()
+    }]);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "name": "mdla-client-pf",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "echo 'requiring node v6.9.1' && . ~/.nvm/nvm.sh && nvm use 6.9.1 && echo 'Now launching `node_modules/.bin/nodemon worker.js`' && node_modules/.bin/nodemon worker.js",
+    "test": ". ~/.nvm/nvm.sh && nvm use 6.9.1 && node_modules/.bin/mocha -b test/integration/",
+    "staging": "echo 'requiring node v6.9.1' && . ~/.nvm/nvm.sh && nvm use 6.9.1 && echo 'Now launching `node_modules/.bin/nodemon worker.js`' && node_modules/.bin/nodemon staging.js",
+    "cron-ingest": ". ~/.nvm/nvm.sh && nvm use 6.9.1 && node cron/ingest.js",
+    "lint": "./node_modules/.bin/eslint ."
+  },
+  "engines": {
+    "node": "6.9.1"
+  },
+  "dependencies": {
+    "afrostream-node-amqp": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-amqp.git#v1.0.2",
+    "afrostream-node-app": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-app.git#v2.4.1",
+    "afrostream-node-bucket": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-bucket.git#v1.0.1",
+    "afrostream-node-client-backend": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-client-backend.git#v3.2.0",
+    "afrostream-node-client-pf": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-client-pf.git#v1.2.0",
+    "afrostream-node-config": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-config.git#v3.2.3",
+    "afrostream-node-middleware-error": "git+https://afrostream-tech:39378b0626f1b2d4c733eeb5c5be73908b3c8c53@github.com/Afrostream/afrostream-node-middleware-error.git#v1.0.0",
+    "bitcodin": "^0.7.0",
+    "bluebird": "^3.4.7",
+    "body-parser": "^1.16.1",
+    "compression": "^1.6.2",
+    "express": "^4.14.1",
+    "express-cluster": "0.0.4",
+    "lodash": "^4.17.4",
+    "mediainfoq": "0.0.3",
+    "pg": "^6.1.2",
+    "request": "^2.79.0",
+    "sequelize": "^3.30.2",
+    "serve-index": "^1.8.0"
+  },
+  "pre-commit": [
+    "lint"
+  ],
+  "private": true,
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "eslint": "^3.16.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
