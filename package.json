@@ -8,7 +8,8 @@
     "test": ". ~/.nvm/nvm.sh && nvm use 6.9.1 && node_modules/.bin/mocha -b test/integration/",
     "staging": "echo 'requiring node v6.9.1' && . ~/.nvm/nvm.sh && nvm use 6.9.1 && echo 'Now launching `node_modules/.bin/nodemon worker.js`' && node_modules/.bin/nodemon staging.js",
     "cron-ingest": ". ~/.nvm/nvm.sh && nvm use 6.9.1 && node cron/ingest.js",
-    "lint": "./node_modules/.bin/eslint ."
+    "lint": "./node_modules/.bin/eslint .",
+    "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
   "engines": {
     "node": "6.9.1"
@@ -35,12 +36,14 @@
     "serve-index": "^1.8.0"
   },
   "pre-commit": [
+    "precommit-msg",
     "lint"
   ],
   "private": true,
   "devDependencies": {
+    "eslint": "^3.16.1",
     "nodemon": "^1.11.0",
-    "eslint": "^3.16.1"
+    "pre-commit": "^1.2.2"
   },
   "author": "",
   "license": "ISC"
