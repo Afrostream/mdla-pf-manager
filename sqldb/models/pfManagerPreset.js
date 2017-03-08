@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-  const PFPreset = sequelize.define('PFPreset', {
+  const PFManagerPreset = sequelize.define('PFManagerPreset', {
     _id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -28,5 +28,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   });
 
-  return PFPreset;
+  return PFManagerPreset;
 };

@@ -3,8 +3,7 @@
 // exporting an instance
 const config = rootRequire('config');
 const AMQP = require('afrostream-node-amqp');
-const MESSAGES = require('./consts');
-const configMQ = config['mdla-client-pf'].mq;
+const configMQ = config['mdla-pf-manager'].mq;
 const exchangeName = configMQ.exchangeName;
 var mqPF = new AMQP(configMQ);
 var localQueue = [];

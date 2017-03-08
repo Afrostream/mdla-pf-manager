@@ -2,10 +2,10 @@
 
 const _ = require('lodash');
 const sqldb = rootRequire('sqldb');
-const PFBroadcaster = sqldb.PFBroadcaster;
+const PFManagerBroadcaster = sqldb.PFManagerBroadcaster;
 
 module.exports.addBroadcasters = function (updates) {
-  const broadcasters = PFBroadcaster.build(_.map(updates.broadcasters || [], _.partialRight(_.pick, '_id')));
+  const broadcasters = PFManagerBroadcaster.build(_.map(updates.broadcasters || [], _.partialRight(_.pick, '_id')));
   return entity => entity.setBroadcasters(broadcasters)
     .then(() => entity);
 };
@@ -51,7 +51,7 @@ module.exports.handleError = (res, statusCode) => {
       code: err.code,
       message: err.message
     });
-  }
+  };
 };
 
 

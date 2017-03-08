@@ -35,11 +35,9 @@ class TranscodingProvider {
 
     Q()
       .then(() => {
-
         switch (type) {
           case MESSAGES.JOB_CREATED:
             return this.canTranscodeByBroadcaster(dataValues.broadcasters);
-            break;
           default:
             break;
         }
@@ -62,9 +60,8 @@ class TranscodingProvider {
   canTranscodeByBroadcaster (broadcasters) {
     return Q()
       .then(() => {
-        console.log('[MQPF]: ', broadcasters, this.broadcasters_);
         return _.intersection(this.broadcasters_, broadcasters);
-      })
+      });
   }
 
   name () {
@@ -75,14 +72,15 @@ class TranscodingProvider {
     return {
       name: this.name_,
       status: this.healthCheck()
-    }
+    };
   }
 
-  createTask (options) {
+  createTask () {
     return Q()
       .then(() => {
-        console.log(`[MQPF]: Provider ${this.name_}  createTask`, options);
-      })
+        console.log(`[MQPF]: Provider ${this.name_}  createTask`);
+        return {};
+      });
   }
 
   healthCheck () {
@@ -90,7 +88,7 @@ class TranscodingProvider {
       status: 'Ok',
       status_code: 'PF Status code',
       incident: 'none'
-    }
+    };
   }
 }
 

@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-  const PFJob = sequelize.define('PFJob', {
+  const PFManagerJob = sequelize.define('PFManagerJob', {
     _id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -21,5 +21,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   });
 
-  return PFJob;
+  return PFManagerJob;
 };

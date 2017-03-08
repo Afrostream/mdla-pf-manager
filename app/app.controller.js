@@ -15,7 +15,6 @@ module.exports.alive = function (req, res) {
 module.exports.index = function (req, res) {
   res.render('index.html', {
     config: JSON.stringify({
-      frontEndBaseUrl: config['afrostream-front-end'].baseUrl,
       bucketBaseUrl: config.amazon.baseUrl + '/' + config.bucketName
     })
   });

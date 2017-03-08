@@ -89,7 +89,7 @@ class EncodingApi {
       })
       .then((res) => {
         if (res.response.status === 'Error') {
-          throw new Error(res.response.errors.error)
+          throw new Error(res.response.errors.error);
         }
         return res.response;
       });

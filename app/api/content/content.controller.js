@@ -1,31 +1,29 @@
 'use strict';
 
 const sqldb = rootRequire('sqldb');
-const _ = require('lodash');
 const Q = require('q');
-const backend = rootRequire('backend');
 const utils = require('../utils');
-const PFContent = sqldb.PFContent;
-const PFBroadcaster = sqldb.PFBroadcaster;
-const PFJob = sqldb.PFJob;
+const PFManagerContent = sqldb.PFManagerContent;
+const PFManagerBroadcaster = sqldb.PFManagerBroadcaster;
+const PFManagerJob = sqldb.PFManagerJob;
 const mediainfo = require('mediainfoq');
 /**
- * Show PFContent List
+ * Show PFManagerContent List
  *
  * @param req
  * @param res
  */
 module.exports.index = function (req, res) {
-  return PFContent.findAll({
+  return PFManagerContent.findAll({
     include: [
       {
-        model: PFBroadcaster,
+        model: PFManagerBroadcaster,
         as: 'broadcasters',
         required: false,
         attributes: ['_id', 'name']
       },
       {
-        model: PFJob,
+        model: PFManagerJob,
         as: 'jobs',
         required: false,
         attributes: ['_id', 'status']
@@ -47,17 +45,17 @@ module.exports.mediaInfo = function (req, res) {
     .then(() => {
       const {
         url,
-        username,
-        password,
-        formUrl,
-        isSaving
+        //username,
+        //password,
+        //formUrl,
+        //isSaving
       } = req.query;
 
       return mediainfo(url);
     })
     .then(mediaInfo => {
       if (!mediaInfo || !mediaInfo.length) {
-        throw new Error('No media info found from source')
+        throw new Error('No media info found from source');
       }
 
       return mediaInfo[0];
@@ -86,13 +84,13 @@ module.exports.show = function (req, res) {
     },
     include: [
       {
-        model: PFBroadcaster,
+        model: PFManagerBroadcaster,
         as: 'broadcasters',
         required: false,
         attributes: ['_id', 'name']
       },
       {
-        model: PFJob,
+        model: PFManagerJob,
         as: 'jobs',
         required: false,
         attributes: ['_id', 'status']
@@ -100,7 +98,7 @@ module.exports.show = function (req, res) {
     ]
   };
 
-  PFContent.find(queryOptions)
+  PFManagerContent.find(queryOptions)
     .then(utils.handleEntityNotFound(res))
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -124,10 +122,10 @@ module.exports.create = (req, res) => {
 
   Q()
     .then(() => {
-      return PFContent.sync();
+      return PFManagerContent.sync();
     })
     .then(() => {
-      return PFContent.create({
+      return PFManagerContent.create({
         contentType: 'url',
         contentUrl: storageUrl,
         contentId
@@ -140,7 +138,7 @@ module.exports.create = (req, res) => {
     })
     .then(mediaInfo => {
       if (!mediaInfo || !mediaInfo.length) {
-        throw new Error('No media info found from source')
+        throw new Error('No media info found from source');
       }
 
       c.entity.mediaInfo = mediaInfo[0];
@@ -159,7 +157,7 @@ module.exports.create = (req, res) => {
  */
 exports.update = (req, res) => {
 
-  PFContent.find({
+  PFManagerContent.find({
     where: {
       _id: req.params.id
     }
@@ -167,7 +165,7 @@ exports.update = (req, res) => {
     .then(utils.handleEntityNotFound(res))
     .then(utils.addBroadcasters(req.body))
     .then((entity) => {
-      return entity.updateAttributes(req.body)
+      return entity.updateAttributes(req.body);
     })
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -182,7 +180,7 @@ exports.update = (req, res) => {
  */
 
 exports.destroy = (req, res) => {
-  PFContent.find({
+  PFManagerContent.find({
     where: {
       _id: req.params.id
     }

@@ -1,11 +1,8 @@
 'use strict';
 
 const sqldb = rootRequire('sqldb');
-const _ = require('lodash');
-const Q = require('q');
-const backend = rootRequire('backend');
 const utils = require('../utils');
-const PFPreset = sqldb.PFPreset;
+const PFManagerPreset = sqldb.PFManagerPreset;
 
 /**
  * List All PFProviders
@@ -20,7 +17,7 @@ module.exports.index = function (req, res) {
       ['_id', 'desc']
     ]
   };
-  return PFPreset.findAll(queryOptions)
+  return PFManagerPreset.findAll(queryOptions)
     .then(utils.responseWithResult(req, res, 201))
     .catch(res.handleError());
 };
@@ -38,7 +35,7 @@ module.exports.show = function (req, res) {
     }
   };
 
-  PFPreset.find(queryOptions)
+  PFManagerPreset.find(queryOptions)
     .then(utils.handleEntityNotFound(res))
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -51,7 +48,7 @@ module.exports.show = function (req, res) {
  * @param res
  */
 module.exports.create = (req, res) => {
-  PFPreset.create(req.body)
+  PFManagerPreset.create(req.body)
     .then(utils.responseWithResult(req, res, 201))
     .catch(res.handleError());
 };
@@ -64,7 +61,7 @@ module.exports.create = (req, res) => {
  */
 exports.update = (req, res) => {
 
-  PFPreset.find({
+  PFManagerPreset.find({
     where: {
       _id: req.params.id
     }
@@ -84,7 +81,7 @@ exports.update = (req, res) => {
  */
 
 exports.destroy = (req, res) => {
-  PFPreset.find({
+  PFManagerPreset.find({
     where: {
       _id: req.params.id
     }

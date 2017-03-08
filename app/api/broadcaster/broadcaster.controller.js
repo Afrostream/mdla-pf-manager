@@ -3,18 +3,17 @@
 const sqldb = rootRequire('sqldb');
 const _ = require('lodash');
 const Q = require('q');
-const backend = rootRequire('backend');
 const utils = require('../utils');
-const PFBroadcaster = sqldb.PFBroadcaster;
+const PFManagerBroadcaster = sqldb.PFManagerBroadcaster;
 
 /**
- * Show PFBroadcaster List
+ * Show PFManagerBroadcaster List
  *
  * @param req
  * @param res
  */
 module.exports.index = function (req, res) {
-  return PFBroadcaster.findAll({
+  return PFManagerBroadcaster.findAll({
     attributes: [
       '_id',
       'name',
@@ -38,7 +37,7 @@ module.exports.show = function (req, res) {
     }
   };
 
-  PFBroadcaster.find(queryOptions)
+  PFManagerBroadcaster.find(queryOptions)
     .then(utils.handleEntityNotFound(res))
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -54,10 +53,10 @@ module.exports.create = (req, res) => {
 
   Q()
     .then(() => {
-      return PFBroadcaster.sync();
+      return PFManagerBroadcaster.sync();
     })
     .then(() => {
-      return PFBroadcaster.create(req.body);
+      return PFManagerBroadcaster.create(req.body);
     })
     .then(utils.responseWithResult(req, res, 201))
     .catch(res.handleError());
@@ -71,7 +70,7 @@ module.exports.create = (req, res) => {
  */
 exports.update = (req, res) => {
 
-  PFBroadcaster.find({
+  PFManagerBroadcaster.find({
     where: {
       _id: req.params.id
     }
@@ -79,7 +78,7 @@ exports.update = (req, res) => {
     .then(utils.handleEntityNotFound(res))
     .then((entity) => {
       const mergedData = _.merge(entity.toJSON(), req.body);
-      return entity.updateAttributes(mergedData)
+      return entity.updateAttributes(mergedData);
     })
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -94,7 +93,7 @@ exports.update = (req, res) => {
  */
 
 exports.destroy = (req, res) => {
-  PFBroadcaster.find({
+  PFManagerBroadcaster.find({
     where: {
       _id: req.params.id
     }

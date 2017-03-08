@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-  const PFContent = sequelize.define('PFContent', {
+  const PFManagerBroadcaster = sequelize.define('PFManagerBroadcaster', {
     _id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -8,17 +8,8 @@ module.exports = function (sequelize, DataTypes) {
       unique: true,
       autoIncrement: true
     },
-    contentId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      unique: true,
-    },
-    contentType: DataTypes.STRING(32),
-    contentUrl: DataTypes.STRING(2048),
-    countries: DataTypes.ARRAY(DataTypes.STRING(2)),
-    filename: DataTypes.STRING(255),
-    mediaInfo: DataTypes.JSON,
+    name: DataTypes.STRING(64),
+    capabilities: DataTypes.JSON,
     createdAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -31,5 +22,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   });
 
-  return PFContent;
+  return PFManagerBroadcaster;
 };

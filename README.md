@@ -1,8 +1,8 @@
 # Description
 
-Client PF Service
+PF Manager
 
-BO -> MQ -> (CLIENT_PF) <- [encoding.com|afrPF|zendcoder]
+BO -> MQ -> (MANAGER) <- [encoding.com|afrPF|zendcoder]
 
 # Workflow
 

@@ -11,19 +11,18 @@ const db = {
   )
 };
 
-db.PFBroadcaster = db.sequelize.import('models/pfBroadcaster');
-db.PFContent = db.sequelize.import('models/pfContent');
-//db.PFProvider = db.sequelize.import('models/pfProvider');
-db.PFJob = db.sequelize.import('models/pfjob');
+db.PFManagerBroadcaster = db.sequelize.import('models/pfManagerBroadcaster');
+db.PFManagerContent = db.sequelize.import('models/pfManagerContent');
+db.PFManagerPreset = db.sequelize.import('models/pfManagerPreset');
+db.PFManagerJob = db.sequelize.import('models/pfManagerJob');
 
-//db.PFProvider.hasMany(db.PFBroadcaster, {as: 'broadcasters'});
-db.PFContent.hasMany(db.PFBroadcaster, {as: 'broadcasters'});
-db.PFContent.hasMany(db.PFJob, {as: 'jobs', foreignKey: 'contentId'});
-db.PFJob.hasOne(db.PFContent, {as: 'content', foreignKey: 'jobId'});
+db.PFManagerContent.hasMany(db.PFManagerBroadcaster, {as: 'broadcasters'});
+db.PFManagerContent.hasMany(db.PFManagerJob, {as: 'jobs', foreignKey: 'contentId'});
+db.PFManagerJob.hasOne(db.PFManagerContent, {as: 'content', foreignKey: 'jobId'});
 
-//db.PFJob.sync({force: true});
-//db.PFBroadcaster.sync({force: true});
-//db.PFProvider.sync({force: true});
-//db.PFContent.sync({force: true});
+//db.PFManagerJob.sync({force: true});
+//db.PFManagerBroadcaster.sync({force: true});
+//db.PFManagerPreset.sync({force: true});
+//db.PFManagerContent.sync({force: true});
 
 module.exports = db;

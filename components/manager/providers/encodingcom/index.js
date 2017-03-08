@@ -1,4 +1,3 @@
-const config = rootRequire('config');
 const TranscodingProvider = require('../transcodingProvider');
 const EncodingApi = require('./encodingcom.api.js');
 // Food is a base class
@@ -9,8 +8,8 @@ class EncodingcomProvider extends TranscodingProvider {
     this.api = new EncodingApi();
   }
 
-  createTask (options) {
-
+  createTask () {
+    return super.createTask();
   }
 
   presets () {

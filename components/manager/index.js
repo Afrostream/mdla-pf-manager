@@ -4,7 +4,7 @@ const _ = require('lodash');
 const mq = require('./mqPF');
 const MESSAGES = require('./consts');
 
-class PFProviders {
+class PFManager {
 
   constructor () {
     this.transcodingProvider = new TranscodingProvider();
@@ -33,21 +33,23 @@ class PFProviders {
   }
 
   getProviderByName (type) {
+    let provider = null;
     switch (type) {
       case this.encodingcom.name():
-        return this.encodingcom;
+        provider = this.encodingcom;
         break;
       case this.bitmovin.name():
-        return this.bitmovin;
+        provider = this.bitmovin;
         break;
       default:
-        return this.transcodingProvider;
-        break
+        provider = this.transcodingProvider;
+        break;
     }
+    return provider;
   }
 
 }
 
-PFProviders.prototype.MESSAGES = MESSAGES;
+PFManager.prototype.MESSAGES = MESSAGES;
 
-module.exports = new PFProviders();
+module.exports = new PFManager();

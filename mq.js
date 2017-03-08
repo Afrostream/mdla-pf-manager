@@ -6,7 +6,7 @@ const config = require('./config');
 const AMQP = require('afrostream-node-amqp');
 const {getEntityFromType} = require('./backend.api.js');
 const sqldb = rootRequire('sqldb');
-const PFContent = sqldb.PFContent;
+const PFManagerContent = sqldb.PFManagerContent;
 const mediainfo = require('mediainfoq');
 
 const exchangeName = config['afrostream-back-end'].mq.exchangeName;
@@ -84,13 +84,10 @@ function onMessage (message) {
       switch (type) {
         case 'model.created':
           return onModelCreated(modelName, dataValues._id);
-          break;
         case 'model.updated':
           return onModelUpdated(modelName, changed, previousDataValues, dataValues);
-          break;
         case 'model.destroyed':
           return onModelDeleted(modelName, dataValues._id);
-          break;
         default:
           break;
       }
@@ -115,7 +112,7 @@ function onModelCreated (modelName, modelId) {
 
   return getEntityFromType(modelName, modelId)
     .then(entity => {
-      return PFContent.create({
+      return PFManagerContent.create({
         contentId: entity._id,
         broadcasters: entity.broadcasters,
         contentType: 'url',
@@ -126,7 +123,7 @@ function onModelCreated (modelName, modelId) {
       return mediainfo(entity.contentUrl);
     }).then(info => {
       console.log('[CLIENT PF]: set media info ', info);
-      return PFContent.updateAttributes({
+      return PFManagerContent.updateAttributes({
         mediaInfo: info
       });
     })
@@ -153,11 +150,11 @@ function onModelUpdated (modelName, changed, previousDataValues, dataValues) {
 
   return Q()
     .then(() => {
-      return getEntityFromType(modelName, dataValues._id)
+      return getEntityFromType(modelName, dataValues._id);
     })
     .then(entity => {
       if (!entity.storageUrl) {
-        throw new Error('[MQ] storageUrl Key undefined, process stopped')
+        throw new Error('[MQ] storageUrl Key undefined, process stopped');
       }
     }).then(result => {
       console.log('[MQ]: onModelUpdated ', modelName, dataValues._id, result);

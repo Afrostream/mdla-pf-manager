@@ -3,14 +3,13 @@
 const sqldb = rootRequire('sqldb');
 const _ = require('lodash');
 const Q = require('q');
-const backend = rootRequire('backend');
 const utils = require('../utils');
-const PFBroadcaster = sqldb.PFBroadcaster;
-const PFContent = sqldb.PFContent;
-const PFJob = sqldb.PFJob;
-const PFProviders = rootRequire('components/pfProviders');
+const PFManagerBroadcaster = sqldb.PFManagerBroadcaster;
+const PFManagerContent = sqldb.PFManagerContent;
+const PFManagerJob = sqldb.PFManagerJob;
+const PFManager = rootRequire('components/manager');
 /**
- * List All PFProviders
+ * List All PF Jobs
  *
  * @param req
  * @param res
@@ -22,7 +21,7 @@ module.exports.index = function (req, res) {
       ['_id', 'desc']
     ]
   };
-  return PFJob.findAll(queryOptions)
+  return PFManagerJob.findAll(queryOptions)
     .then(utils.responseWithResult(req, res, 201))
     .catch(res.handleError());
 };
@@ -40,7 +39,7 @@ module.exports.show = function (req, res) {
     }
   };
 
-  PFJob.find(queryOptions)
+  PFManagerJob.find(queryOptions)
     .then(utils.handleEntityNotFound(res))
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -58,22 +57,22 @@ module.exports.create = (req, res) => {
   } = req.body;
 
   let message = {
-    type: PFProviders.MESSAGES.JOB_CREATED
+    type: PFManager.MESSAGES.JOB_CREATED
   };
 
   Q()
     .then(() => {
     })
     .then(() => {
-      return PFContent.find({
+      return PFManagerContent.find({
         where: {
           _id: contentId
         },
         include: [
           {
-            model: PFBroadcaster,
+            model: PFManagerBroadcaster,
             as: 'broadcasters',
-            required: true,
+            required: false,
             attributes: ['_id', 'name']
           }
         ]
@@ -81,7 +80,7 @@ module.exports.create = (req, res) => {
     })
     .then((content) => {
       if (!content) {
-        throw new Error('No content Found')
+        throw new Error('No content Found');
       }
 
       //set broadcasters list in message
@@ -94,7 +93,7 @@ module.exports.create = (req, res) => {
         }
       });
 
-      return PFJob.create(req.body)
+      return PFManagerJob.create(req.body);
     })
     .then((job) => {
       console.log('[PF JOB]: [AFTERCREATE]: send ' + JSON.stringify(message) + ' to mq');
@@ -106,7 +105,7 @@ module.exports.create = (req, res) => {
         }
       });
 
-      PFProviders.sendMessage(message);
+      PFManager.sendMessage(message);
 
       return job;
     })
@@ -122,7 +121,7 @@ module.exports.create = (req, res) => {
  */
 exports.update = (req, res) => {
 
-  PFJob.find({
+  PFManagerJob.find({
     where: {
       _id: req.params.id
     }
@@ -142,7 +141,7 @@ exports.update = (req, res) => {
  */
 
 exports.destroy = (req, res) => {
-  PFJob.find({
+  PFManagerJob.find({
     where: {
       _id: req.params.id
     }

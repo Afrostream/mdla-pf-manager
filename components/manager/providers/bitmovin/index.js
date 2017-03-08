@@ -1,6 +1,5 @@
-const config = rootRequire('config');
 const TranscodingProvider = require('../transcodingProvider');
-const BitcodingApi = require('bitcodin')(config.bitcodin.apiKey);
+//const BitcodingApi = require('bitcodin')(config.bitcodin.apiKey);
 // Food is a base class
 class BitmovinProvider extends TranscodingProvider {
 
@@ -8,24 +7,20 @@ class BitmovinProvider extends TranscodingProvider {
     super(options);
   }
 
-  createTask (options) {
-
+  createTask () {
+    return super.createTask();
   }
 
   healthCheck () {
     return {
       ok: false,
       message: 'provider undefined'
-    }
+    };
   }
 }
 
 BitmovinProvider.prototype.name_ = 'bitmovin';
 
 BitmovinProvider.prototype.broadcasters_ = ['AFROSTREAM'];
-
-BitmovinProvider.name = () => {
-  return BitmovinProvider.prototype.name_;
-};
 
 module.exports = BitmovinProvider;
