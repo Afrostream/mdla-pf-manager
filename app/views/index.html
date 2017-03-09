@@ -3,6 +3,7 @@
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
             integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
             crossorigin="anonymous"></script>
@@ -119,7 +120,56 @@
 </div>
 <script>
   angular.module('clientPF', [])
-    .controller('ClientPFController', ['$scope', '$http', function ($scope, $http) {
+    .factory('$socket', function ($rootScope) {
+      var socket = io.connect();
+      return {
+        on: function (eventName, callback) {
+          socket.on(eventName, function () {
+            var args = arguments;
+            $rootScope.$apply(function () {
+              callback.apply(socket, args);
+            });
+          });
+        },
+        emit: function (eventName, data, callback) {
+          socket.emit(eventName, data, function () {
+            var args = arguments;
+            $rootScope.$apply(function () {
+              if (callback) {
+                callback.apply(socket, args);
+              }
+            });
+          })
+        }
+      };
+    })
+    .controller('ClientPFController', ['$scope', '$http', '$socket', function ($scope, $http, $socket) {
+
+      $socket.on('pfmanager.job.restart', function (data) {
+        console.log('pfmanager.job.restart', data);
+//        $scope.updateJob(data);
+        $scope.getContent()
+      });
+
+      $socket.on('pfmanager.job.updated.status', function (data) {
+        console.log('pfmanager.job.updated.status', data);
+//        $scope.updateJob(data);
+        $scope.getContent()
+      });
+
+      $scope.updateJob = function (data) {
+        angular.forEach($scope.contents, function (content) {
+          if (content._id == data.contentId) {
+            angular.forEach(content.jobs, function (job) {
+              if (job._id == data.jobId) {
+                $http.get('api/jobs/' + job._id, {contentId: content._id}).then(function (response) {
+                  job = response.data;
+                });
+              }
+            })
+          }
+        });
+      };
 
       $scope.broadcasters = [];
       $scope.providers = [];

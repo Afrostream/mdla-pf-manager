@@ -1,7 +1,7 @@
 const {EncodingcomProvider, BitmovinProvider, TranscodingProvider} = require('./providers');
 const Q = require('q');
 const _ = require('lodash');
-const mq = require('./mqPF');
+const mqPF = require('./mqPF');
 const {STATUS, MESSAGES} = require('./constants');
 
 const sqldb = rootRequire('sqldb');
@@ -13,7 +13,7 @@ class PFManager {
     this.transcodingProvider = new TranscodingProvider();
     this.encodingcom = new EncodingcomProvider();
     this.bitmovin = new BitmovinProvider();
-    mq.on('message', this.onMessage.bind(this));
+    mqPF.on('message', this.onMessage.bind(this));
   }
 
   sendMessage (message) {
@@ -29,7 +29,7 @@ class PFManager {
       }
     }, message);
 
-    return mq.send(message);
+    return mqPF.send(message);
   }
 
   onMessage (message) {

@@ -9,6 +9,7 @@ const MESSAGES = {
     RESTART: 'pfmanager.job.restart',
     READY: 'pfmanager.job.ready',
     STARTED: 'pfmanager.job.started',
+    REMOVED: 'pfmanager.job.removed',
     UPDATED_STATUS: 'pfmanager.job.updated.status'
   },
   BID: {

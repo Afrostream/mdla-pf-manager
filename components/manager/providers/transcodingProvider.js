@@ -40,10 +40,12 @@ class TranscodingProvider {
       .then(() => {
         switch (type) {
           case MESSAGES.JOB.CREATED:
-          case MESSAGES.JOB.RESTART:
             return this.canTranscodeByBroadcaster(dataValues);
+          case MESSAGES.JOB.RESTART:
           case MESSAGES.BID.ACCEPTED:
             return this.bidTranscodeAccepted(dataValues);
+          case MESSAGES.JOB.REMOVED:
+            return this.removeTask(dataValues);
           default:
             return false;
         }
@@ -139,11 +141,11 @@ class TranscodingProvider {
           return false;
         }
 
-        const dataValues = {
+        const dataValues = _.merge(data, {
           jobId: data.jobId,
           encodingId: task.encodingId,
           message: task.message
-        };
+        });
 
         this.startCheckStatusInterval(dataValues);
 
@@ -156,7 +158,12 @@ class TranscodingProvider {
       });
   }
 
+  /**
+   * Update status intervall and update Job model
+   * @param data
+   */
   startCheckStatusInterval (data) {
+    //TODO @marc ->  when worker down, implement job status update on worker restart ( -> too hard )
     const intervalId = setInterval(() => {
       this.getStatus(data.encodingId)
         .then((res) => {
@@ -241,6 +248,18 @@ class TranscodingProvider {
    */
   jobsList () {
     return [];
+  }
+
+  /**
+   * Get Job task and remove it to PF Provider
+   * @param data
+   */
+  removeTask (data) {
+    return Q()
+      .then(() => {
+        console.log(`[MQPFM]: Provider ${this.name_} removeTask ${data}`);
+        return false;
+      });
   }
 
   /**

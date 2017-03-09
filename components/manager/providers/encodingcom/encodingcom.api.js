@@ -46,7 +46,7 @@ class EncodingApi {
     return this.request(params);
   }
 
-  cancelMedia (mediaId) {
+  cancelMedia ({mediaId}) {
     const params = {
       action: 'restartmedia',
       mediaid: mediaId

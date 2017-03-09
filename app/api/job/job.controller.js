@@ -10,14 +10,15 @@ const PFManagerJob = sqldb.PFManagerJob;
 const PFManager = rootRequire('components/manager');
 
 
-const sendJobMessage = (jobId, message) => {
+const sendJobMessage = (job, message) => {
   return Q()
     .then(() => {
       console.log(`[PF JOB]: [AFTERCREATE]: send ${message.type} to mq`);
       message = _.merge(message, {
         data: {
           dataValues: {
-            jobId
+            jobId: job._id,
+            encodingId: job.encodingId
           }
         }
       });
@@ -164,7 +165,7 @@ module.exports.create = (req, res) => {
     })
     .then((job) => {
       c.job = job;
-      return sendJobMessage(job._id, c.message);
+      return sendJobMessage(c.job, c.message);
     })
     .then(() => {
       return c.job;
@@ -211,7 +212,7 @@ exports.update = (req, res) => {
     .then(utils.saveUpdates(req.body))
     .then((job) => {
       c.job = job;
-      return sendJobMessage(job._id, c.message);
+      return sendJobMessage(c.job, c.message);
     })
     .then(() => {
       return c.job;
@@ -229,12 +230,37 @@ exports.update = (req, res) => {
  */
 
 exports.destroy = (req, res) => {
-  PFManagerJob.find({
-    where: {
-      _id: req.params.id
+
+  let c = {
+    job: null,
+    message: {
+      type: PFManager.MESSAGES.JOB.REMOVED
     }
-  })
+  };
+
+  return Q()
+    .then(() => {
+      return PFManagerJob.find({
+        where: {
+          _id: req.params.id
+        }
+      });
+    })
     .then(utils.handleEntityNotFound(res))
+    .then((job) => {
+      c.job = job;
+      return job;
+    })
+    .then((job) => {
+      return prepareJobMessage(job.contentId, c.message);
+    })
+    .then((message) => {
+      c.message = message;
+      return sendJobMessage(c.job, c.message);
+    })
+    .then(() => {
+      return c.job;
+    })
     .then(utils.removeEntity(res))
     .catch(res.handleError());
 };

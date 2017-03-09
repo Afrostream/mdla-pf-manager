@@ -12,6 +12,20 @@ class EncodingcomProvider extends TranscodingProvider {
   }
 
   /** @inheritdoc */
+  removeTask (data) {
+    console.log(`[MQPFM]: Provider ${this.name_} removeTask`);
+    return Q()
+      .then(() => {
+        return this.api.cancelMedia({mediaId: data.encodingId});
+      }).then((res) => {
+        return {
+          encodingId: res.MediaID || data.encodingId,//On restart encoding don't pass mediaId, so get prev
+          message: res.message
+        };
+      });
+  }
+
+  /** @inheritdoc */
   createTask (data) {
     console.log(`[MQPFM]: Provider ${this.name_} createTask`);
     return Q()
