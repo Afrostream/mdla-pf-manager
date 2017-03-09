@@ -45,9 +45,10 @@ class PFManager {
         switch (type) {
           case MESSAGES.JOB.ERROR:
           case MESSAGES.JOB.READY:
+          case MESSAGES.JOB.UPDATED_STATUS:
             return this.updateJob(type, dataValues, error);
           case MESSAGES.BID.OFFER:
-            return this.onBidOffer(type, dataValues, error);
+            return this.onBidOffer(dataValues);
           default:
             return false;
         }
@@ -88,11 +89,17 @@ class PFManager {
           case MESSAGES.JOB.READY:
             job.status = STATUS.JOB.READY;
             job.statusMessage = data.message;
-            job.mediaId = data.mediaId;
+            job.encodingId = data.encodingId;
+            break;
+          case MESSAGES.JOB.UPDATED_STATUS:
+            job.status = data.status;
+            job.progress = data.progress;
             break;
           default:
             return false;
         }
+
+        console.log(`[MQPFM]: [PFMANAGER] job updated: ${data.jobId} ${type}`);
 
         return job.save();
       });
@@ -100,12 +107,10 @@ class PFManager {
 
   /**
    * Job Accepted from PF (compare All)
-   * @param type
    * @param data
-   * @param error
    * @returns {Promise.<TResult>}
    */
-  onBidOffer (type, data, error) {
+  onBidOffer (data) {
     return Q()
       .then(() => {
         return PFManagerJob.find({
@@ -122,11 +127,13 @@ class PFManager {
         //multiple worker bidder ????
         job.providerName = data.providerName;
         return job.save();
-      }).then(() => {
+      }).then((job) => {
         return this.sendMessage({
           type: MESSAGES.BID.ACCEPTED,
           data: {
-            dataValues: data
+            dataValues: _.merge(data, {
+              encodingId: job.encodingId
+            })
           }
         });
       });

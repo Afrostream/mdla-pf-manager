@@ -38,7 +38,7 @@ class EncodingApi {
     return this.request(params);
   }
 
-  restartMedia (mediaId) {
+  restartMedia ({mediaId}) {
     const params = {
       action: 'restartmedia',
       mediaid: mediaId
@@ -90,6 +90,9 @@ class EncodingApi {
       })
       .then((res) => {
         if (res.response.status === 'Error') {
+          throw new Error(res.response.errors.error);
+        }
+        if (res.response && res.response.errors && res.response.errors.error) {
           throw new Error(res.response.errors.error);
         }
         console.log(`[ENCODING.COM API]: Response`, res.response);

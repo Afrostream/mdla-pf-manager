@@ -9,9 +9,14 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: true
     },
     status: DataTypes.STRING(32),
+    progress: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0
+    },
     providerName: DataTypes.STRING(255),
     statusMessage: DataTypes.STRING(255),
-    mediaId: DataTypes.STRING(255),
+    encodingId: DataTypes.STRING(255),
     createdAt: {
       type: DataTypes.DATE,
       allowNull: true,

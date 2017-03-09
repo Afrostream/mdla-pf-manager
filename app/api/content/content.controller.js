@@ -26,7 +26,7 @@ module.exports.index = function (req, res) {
         model: PFManagerJob,
         as: 'jobs',
         required: false,
-        attributes: ['_id', 'status', 'mediaId']
+        attributes: ['_id', 'status', 'progress', 'encodingId']
       }
     ]
   })
@@ -93,7 +93,7 @@ module.exports.show = function (req, res) {
         model: PFManagerJob,
         as: 'jobs',
         required: false,
-        attributes: ['_id', 'status', 'mediaId']
+        attributes: ['_id', 'status', 'progress', 'encodingId']
       }
     ]
   };

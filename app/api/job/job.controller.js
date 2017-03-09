@@ -102,6 +102,39 @@ module.exports.show = function (req, res) {
     .catch(res.handleError());
 };
 
+module.exports.pfStatus = function (req, res) {
+  let queryOptions = {
+    where: {
+      _id: req.params.id
+    }
+  };
+
+  let c = {
+    job: null
+  };
+
+  return Q()
+    .then(() => {
+      return PFManagerJob.find(queryOptions);
+    })
+    .then(utils.handleEntityNotFound(res))
+    .then((job) => {
+      if (!job.providerName) {
+        throw new Error(`No provider found for ${job._id}`);
+      }
+      c.job = job;
+      return PFManager.getProviderByName(c.job.providerName);
+    })
+    .then((provider) => {
+      if (!provider) {
+        throw new Error(`No provider found for ${c.job._id}`);
+      }
+      return provider.getStatus(c.job.encodingId);
+    })
+    .then(utils.responseWithResult(req, res, 201))
+    .catch(res.handleError());
+};
+
 /**
  * Creates a new PFProvider in the DB
  *

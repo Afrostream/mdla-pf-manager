@@ -1,7 +1,7 @@
 const Q = require('q');
 const _ = require('lodash');
 const mq = require('./../mqPF');
-const {MESSAGES} = require('./../constants');
+const {MESSAGES, STATUS} = require('./../constants');
 
 /**
  * Base Transcodding Provider class
@@ -117,7 +117,6 @@ class TranscodingProvider {
             })
           }
         };
-        return true;
       });
   }
 
@@ -130,7 +129,7 @@ class TranscodingProvider {
     return Q()
       .then(() => {
         if (data.providerName !== this.name_) {
-          return false
+          return false;
         }
         return this.createTask(data);
       })
@@ -140,17 +139,52 @@ class TranscodingProvider {
           return false;
         }
 
+        const dataValues = {
+          jobId: data.jobId,
+          encodingId: task.encodingId,
+          message: task.message
+        };
+
+        this.startCheckStatusInterval(dataValues);
+
         return {
           type: MESSAGES.JOB.READY,
           data: {
-            dataValues: {
-              jobId: data.jobId,
-              mediaId: task.mediaId,
-              message: task.message
-            }
+            dataValues
           }
         };
       });
+  }
+
+  startCheckStatusInterval (data) {
+    const intervalId = setInterval(() => {
+      this.getStatus(data.encodingId)
+        .then((res) => {
+            switch (res.status) {
+              case STATUS.JOB.COMPLETE:
+              case STATUS.JOB.CANCELLED:
+              case STATUS.JOB.ERROR:
+                clearInterval(intervalId);
+                break;
+              default:
+                break;
+            }
+
+            this.sendMessage({
+              type: MESSAGES.JOB.UPDATED_STATUS,
+              data: {
+                dataValues: _.merge(data, {
+                  status: res.status,
+                  progress: res.progress
+                })
+              }
+            });
+          },
+          err => {
+            console.error(`[PFManager]: error on message: ${data.type} job ${data.jobId}`, err.stack);
+            clearInterval(intervalId);
+          });
+    }, 5000);
   }
 
   /**
@@ -177,6 +211,27 @@ class TranscodingProvider {
     return {
       name: this.name_,
       status: this.healthCheck()
+    };
+  }
+
+  /**
+   * Get encoding status
+   * @param encodingId
+   */
+  getStatus (encodingId) {
+    return {
+      status: STATUS.JOB.SOMEOTHERSTATUS,
+      id: encodingId,
+      contentUrl: '',
+      created: '',
+      started: '',
+      finished: '',
+      downloaded: '',
+      filesize: '',
+      processor: '',
+      region: '',
+      progress: '',
+      time_left: '',
     };
   }
 

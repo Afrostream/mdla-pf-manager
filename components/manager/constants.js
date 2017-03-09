@@ -8,8 +8,8 @@ const MESSAGES = {
     CREATED: 'pfmanager.job.created',
     RESTART: 'pfmanager.job.restart',
     READY: 'pfmanager.job.ready',
-    STARTED: 'pfmanager.job.started'
-
+    STARTED: 'pfmanager.job.started',
+    UPDATED_STATUS: 'pfmanager.job.updated.status'
   },
   BID: {
     OFFER: 'pfmanager.bid.offer',
@@ -24,7 +24,7 @@ const MESSAGES = {
 const STATUS = {
   JOB: {
     PENDING: 'pending',//Added to pipeline
-    DOWNLOADING: 'Downloading',//Download file to current PF
+    DOWNLOADING: 'downloading',//Download file to current PF
     READY: 'ready',//Ready to process job
     WAITING: 'waiting',//Waiting for encoder init
     PREPROCESSING: 'preprocessing',//Waiting for encoder (copy files ...) merge( DOWNLOADING, READY, WAITING )

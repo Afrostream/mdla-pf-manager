@@ -93,12 +93,15 @@
                                     <div class="form-group form-inline" ng-repeat="job in content.jobs">
                                         <label>Job {{job._id}} Status
                                             <a href="/api/jobs/{{job._id}}" target="_self">(show job infos)</a>
+                                            <a href="/api/jobs/{{job._id}}/status" target="_self">(show job provider
+                                                infos)</a>
                                         </label>
                                         <div class="progress text-center">
                                             <div class="progress-bar" role="progressbar"
                                                  aria-valuenow="getProgressStatus(job)"
-                                                 aria-valuemin="0" aria-valuemax="100">
-                                                <span style="text-shadow: 0 0 3px rgba(0,0,0,0.8);padding:0 0.3em 0 0.3em;position:absolute;width:100%;">{{job.status}} {{job.mediaId.toString()}}</span>
+                                                 aria-valuemin="0" aria-valuemax="100"
+                                                 style="width:{{ getProgressStatus(job) }}%;">
+                                                <span style="text-shadow: 0 0 3px rgba(0,0,0,0.8);padding:0 0.3em 0 0.3em;">{{job.status}} {{job.encodingId.toString()}}</span>
                                             </div>
                                         </div>
                                         <button class="btn btn-primary" ng-click="restartJob(job)">Restart Job</button>
@@ -197,6 +200,9 @@
         switch (job.status) {
           case 'success':
             statusPercent = 100;
+            break;
+          default:
+            statusPercent = job.progress;
             break;
         }
         return statusPercent;
