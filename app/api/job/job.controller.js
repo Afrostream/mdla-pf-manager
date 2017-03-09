@@ -8,6 +8,63 @@ const PFManagerBroadcaster = sqldb.PFManagerBroadcaster;
 const PFManagerContent = sqldb.PFManagerContent;
 const PFManagerJob = sqldb.PFManagerJob;
 const PFManager = rootRequire('components/manager');
+
+
+const sendJobMessage = (jobId, message) => {
+  return Q()
+    .then(() => {
+      console.log(`[PF JOB]: [AFTERCREATE]: send ${message.type} to mq`);
+      message = _.merge(message, {
+        data: {
+          dataValues: {
+            jobId
+          }
+        }
+      });
+      return PFManager.sendMessage(message);
+    })
+    .then(() => {
+      return message;
+    });
+};
+
+const prepareJobMessage = (contentId, message) => {
+  return Q()
+    .then(() => {
+      console.log(`[PF JOB]: [PREPARE JOB MESSAGE]: ${message.type} for content : ${contentId}`);
+      return PFManagerContent.find({
+        where: {
+          _id: contentId
+        },
+        include: [
+          {
+            model: PFManagerBroadcaster,
+            as: 'broadcasters',
+            required: false,
+            attributes: ['_id', 'name']
+          }
+        ]
+      });
+    })
+    .then((content) => {
+      if (!content) {
+        console.log(`[PF JOB]: [PREPARE JOB MESSAGE]: unknow content : ${contentId}`);
+        throw new Error('No content Found');
+      }
+      //set broadcasters list in message
+      message = _.merge(message, {
+        data: {
+          dataValues: {
+            contentId: content._id,
+            broadcasters: _.map(content.broadcasters || [], 'name'),
+            mediaInfo: content.mediaInfo
+          }
+        }
+      });
+
+      return message;
+    });
+};
 /**
  * List All PF Jobs
  *
@@ -56,58 +113,28 @@ module.exports.create = (req, res) => {
     contentId,
   } = req.body;
 
-  let message = {
-    type: PFManager.MESSAGES.JOB_CREATED
+  let c = {
+    job: null,
+    message: {
+      type: PFManager.MESSAGES.JOB_CREATED
+    }
   };
 
   Q()
     .then(() => {
+      return prepareJobMessage(contentId, c.message);
     })
-    .then(() => {
-      return PFManagerContent.find({
-        where: {
-          _id: contentId
-        },
-        include: [
-          {
-            model: PFManagerBroadcaster,
-            as: 'broadcasters',
-            required: false,
-            attributes: ['_id', 'name']
-          }
-        ]
-      });
-    })
-    .then((content) => {
-      if (!content) {
-        throw new Error('No content Found');
-      }
-
-      //set broadcasters list in message
-      message = _.merge(message, {
-        data: {
-          dataValues: {
-            contentId: content._id,
-            broadcasters: _.map(content.broadcasters || [], 'name')
-          }
-        }
-      });
-
-      return PFManagerJob.create(req.body);
+    .then((message) => {
+      c.message = message;
+      const insert = _.merge(req.body, {status: PFManager.JOB_STATUS.PENDING});
+      return PFManagerJob.create(insert);
     })
     .then((job) => {
-      console.log('[PF JOB]: [AFTERCREATE]: send ' + JSON.stringify(message) + ' to mq');
-      message = _.merge(message, {
-        data: {
-          dataValues: {
-            jobId: job._id
-          }
-        }
-      });
-
-      PFManager.sendMessage(message);
-
-      return job;
+      c.job = job;
+      return sendJobMessage(job._id, c.message);
+    })
+    .then(() => {
+      return c.job;
     })
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
@@ -121,13 +148,41 @@ module.exports.create = (req, res) => {
  */
 exports.update = (req, res) => {
 
-  PFManagerJob.find({
-    where: {
-      _id: req.params.id
+  let c = {
+    job: null,
+    message: {
+      type: PFManager.MESSAGES.JOB_RESTART
     }
-  })
+  };
+
+  Q()
+    .then(() => {
+      return PFManagerJob.find({
+        where: {
+          _id: req.params.id
+        }
+      });
+    })
     .then(utils.handleEntityNotFound(res))
+    .then((job) => {
+      c.job = job;
+      return job;
+    })
+    .then((job) => {
+      return prepareJobMessage(job.contentId, c.message);
+    })
+    .then((message) => {
+      c.message = message;
+      return c.job;
+    })
     .then(utils.saveUpdates(req.body))
+    .then((job) => {
+      c.job = job;
+      return sendJobMessage(job._id, c.message);
+    })
+    .then(() => {
+      return c.job;
+    })
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
 };

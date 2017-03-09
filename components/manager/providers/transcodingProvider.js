@@ -1,7 +1,7 @@
 const Q = require('q');
 const _ = require('lodash');
 const mq = require('./../mqPF');
-const MESSAGES = require('./../consts');
+const {MESSAGES} = require('./../consts');
 // Food is a base class
 class TranscodingProvider {
 
@@ -37,24 +37,69 @@ class TranscodingProvider {
       .then(() => {
         switch (type) {
           case MESSAGES.JOB_CREATED:
+          case MESSAGES.JOB_RESTART:
             return this.canTranscodeByBroadcaster(dataValues.broadcasters);
           default:
-            break;
+            return false;
         }
       })
       .then((canTranscode) => {
         if (!canTranscode.length) {
-          console.log(`[MQPF]: Provider ${this.name_} can't transcode ${dataValues.jobId}`);
+          if (_.isArray(canTranscode)) {
+            console.log(`[MQPFM]: Provider ${this.name_} can't transcode ${dataValues.jobId} for broadcasters : ${dataValues.broadcasters}`);
+          }
           return false;
         }
-        return this.createTask();
+        return this.createTask(dataValues);
       })
       .then(
         (task) => {
+          if (!task) {
+            //no task result ... do nothing
+            return task;
+          }
+
+          console.log(`[MQPFM]: Provider ${this.name_}`, task);
+
+          this.sendMessage({
+            type: MESSAGES.JOB_READY,
+            data: {
+              dataValues: {
+                jobId: dataValues.jobId,
+                mediaId: task.mediaId
+              }
+            }
+          });
+
           return task;
         },
-        err => console.error(`[MQPF]: error on message: ${JSON.stringify(message)}: ${err.message}`, err.stack)
+        (error) => {
+          console.error(`[MQPFM]: error on message: ${type}`, error.stack);
+          return this.sendMessage({
+            type: MESSAGES.JOB_ERROR,
+            error,
+            data: {
+              dataValues
+            }
+          });
+        }
       );
+  }
+
+  sendMessage (message) {
+
+    console.log(`[MQPFM]: Provider ${this.name_} sendMessage: ${message.type}`);
+
+    message = _.merge({
+      id: String(Date.now()) + String(Math.round(Math.random() * 100000)),
+      date: new Date().toISOString(),
+      error: null,
+      data: {
+        dataValues: {}
+      }
+    }, message);
+
+    return mq.send(message);
   }
 
   canTranscodeByBroadcaster (broadcasters) {
@@ -75,11 +120,15 @@ class TranscodingProvider {
     };
   }
 
-  createTask () {
+  jobsList () {
+    return [];
+  }
+
+  createTask (data) {
     return Q()
       .then(() => {
-        console.log(`[MQPF]: Provider ${this.name_}  createTask`);
-        return {};
+        console.log(`[MQPFM]: Provider ${this.name_} createTask ${data}`);
+        return false;
       });
   }
 

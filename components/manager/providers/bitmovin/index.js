@@ -7,8 +7,8 @@ class BitmovinProvider extends TranscodingProvider {
     super(options);
   }
 
-  createTask () {
-    return super.createTask();
+  createTask (data) {
+    return super.createTask(data);
   }
 
   healthCheck () {
@@ -21,6 +21,6 @@ class BitmovinProvider extends TranscodingProvider {
 
 BitmovinProvider.prototype.name_ = 'bitmovin';
 
-BitmovinProvider.prototype.broadcasters_ = ['AFROSTREAM'];
+BitmovinProvider.prototype.broadcasters_ = [];
 
 module.exports = BitmovinProvider;

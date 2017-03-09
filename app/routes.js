@@ -11,6 +11,7 @@ router.use((req, res, next) => {
 // opening routes
 router.use('/api/contents', require('./api/content'));
 router.use('/api/broadcasters', require('./api/broadcaster'));
+router.use('/api/providers', require('./api/provider'));
 router.use('/api/jobs', require('./api/job'));
 
 router.get('/*', require('./app.controller').index);

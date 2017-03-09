@@ -29,7 +29,7 @@ class EncodingApi {
     return this.request(params);
   }
 
-  addMedia (source, format) {
+  addMedia ({source, format}) {
     const params = {
       action: 'addmedia',
       'source': source,
@@ -78,6 +78,7 @@ class EncodingApi {
 
   request (params) {
     const postData = this.mergeParams(params);
+    console.log(`[ENCODING.COM API]: Request`, postData);
     return request({
       uri: 'http://manage.encoding.com/',
       method: 'POST',
@@ -91,6 +92,7 @@ class EncodingApi {
         if (res.response.status === 'Error') {
           throw new Error(res.response.errors.error);
         }
+        console.log(`[ENCODING.COM API]: Response`, res.response);
         return res.response;
       });
   }

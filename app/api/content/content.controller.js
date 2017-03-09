@@ -26,7 +26,7 @@ module.exports.index = function (req, res) {
         model: PFManagerJob,
         as: 'jobs',
         required: false,
-        attributes: ['_id', 'status']
+        attributes: ['_id', 'status', 'mediaId']
       }
     ]
   })
@@ -93,7 +93,7 @@ module.exports.show = function (req, res) {
         model: PFManagerJob,
         as: 'jobs',
         required: false,
-        attributes: ['_id', 'status']
+        attributes: ['_id', 'status', 'mediaId']
       }
     ]
   };
@@ -121,9 +121,6 @@ module.exports.create = (req, res) => {
   };
 
   Q()
-    .then(() => {
-      return PFManagerContent.sync();
-    })
     .then(() => {
       return PFManagerContent.create({
         contentType: 'url',
