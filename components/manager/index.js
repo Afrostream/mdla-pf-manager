@@ -2,7 +2,7 @@ const {EncodingcomProvider, BitmovinProvider, TranscodingProvider} = require('./
 const Q = require('q');
 const _ = require('lodash');
 const mq = require('./mqPF');
-const {JOB_STATUS, MESSAGES} = require('./consts');
+const {STATUS, MESSAGES} = require('./constants');
 
 const sqldb = rootRequire('sqldb');
 const PFManagerJob = sqldb.PFManagerJob;
@@ -43,9 +43,11 @@ class PFManager {
     Q()
       .then(() => {
         switch (type) {
-          case MESSAGES.JOB_ERROR:
-          case MESSAGES.JOB_READY:
+          case MESSAGES.JOB.ERROR:
+          case MESSAGES.JOB.READY:
             return this.updateJob(type, dataValues, error);
+          case MESSAGES.BID.OFFER:
+            return this.onBidOffer(type, dataValues, error);
           default:
             return false;
         }
@@ -58,6 +60,13 @@ class PFManager {
       );
   }
 
+  /**
+   * Job status Updated from MQ
+   * @param type
+   * @param data
+   * @param error
+   * @returns {Promise.<TResult>}
+   */
   updateJob (type, data, error) {
     return Q()
       .then(() => {
@@ -72,21 +81,54 @@ class PFManager {
           throw new Error(`[MQPFM]: [PFMANAGER] job not found: ${data.jobId}`);
         }
         switch (type) {
-          case MESSAGES.JOB_ERROR:
-            job.status = JOB_STATUS.ERROR;
+          case MESSAGES.JOB.ERROR:
+            job.status = STATUS.JOB.ERROR;
             job.statusMessage = error.message;
             break;
-          case MESSAGES.JOB_READY:
-            job.status = JOB_STATUS.READY;
+          case MESSAGES.JOB.READY:
+            job.status = STATUS.JOB.READY;
+            job.statusMessage = data.message;
             job.mediaId = data.mediaId;
             break;
           default:
             return false;
         }
-        if (!job) {
-          throw new Error(`[MQPFM]: [PFMANAGER] job save: ${data.jobId}`);
-        }
+
         return job.save();
+      });
+  }
+
+  /**
+   * Job Accepted from PF (compare All)
+   * @param type
+   * @param data
+   * @param error
+   * @returns {Promise.<TResult>}
+   */
+  onBidOffer (type, data, error) {
+    return Q()
+      .then(() => {
+        return PFManagerJob.find({
+          where: {
+            _id: data.jobId
+          }
+        });
+      }).then((job) => {
+        if (!job) {
+          throw new Error(`[MQPFM]: [PFMANAGER] job not found: ${data.jobId}`);
+        }
+        //save bidded provider name
+        //TODO make Bidder method
+        //multiple worker bidder ????
+        job.providerName = data.providerName;
+        return job.save();
+      }).then(() => {
+        return this.sendMessage({
+          type: MESSAGES.BID.ACCEPTED,
+          data: {
+            dataValues: data
+          }
+        });
       });
   }
 
@@ -117,6 +159,6 @@ class PFManager {
 }
 
 PFManager.prototype.MESSAGES = MESSAGES;
-PFManager.prototype.JOB_STATUS = JOB_STATUS;
+PFManager.prototype.STATUS = STATUS;
 
 module.exports = new PFManager();

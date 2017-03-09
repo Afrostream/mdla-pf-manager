@@ -91,7 +91,9 @@
                                         </div>
                                     </div>
                                     <div class="form-group form-inline" ng-repeat="job in content.jobs">
-                                        <label>Job {{job._id}} Status</label>
+                                        <label>Job {{job._id}} Status
+                                            <a href="/api/jobs/{{job._id}}" target="_self">(show job infos)</a>
+                                        </label>
                                         <div class="progress text-center">
                                             <div class="progress-bar" role="progressbar"
                                                  aria-valuenow="getProgressStatus(job)"

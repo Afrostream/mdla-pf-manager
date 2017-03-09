@@ -1,8 +1,11 @@
 const Q = require('q');
 const _ = require('lodash');
 const mq = require('./../mqPF');
-const {MESSAGES} = require('./../consts');
-// Food is a base class
+const {MESSAGES} = require('./../constants');
+
+/**
+ * Base Transcodding Provider class
+ */
 class TranscodingProvider {
 
   constructor () {
@@ -36,47 +39,31 @@ class TranscodingProvider {
     Q()
       .then(() => {
         switch (type) {
-          case MESSAGES.JOB_CREATED:
-          case MESSAGES.JOB_RESTART:
-            return this.canTranscodeByBroadcaster(dataValues.broadcasters);
+          case MESSAGES.JOB.CREATED:
+          case MESSAGES.JOB.RESTART:
+            return this.canTranscodeByBroadcaster(dataValues);
+          case MESSAGES.BID.ACCEPTED:
+            return this.bidTranscodeAccepted(dataValues);
           default:
             return false;
         }
       })
-      .then((canTranscode) => {
-        if (!canTranscode.length) {
-          if (_.isArray(canTranscode)) {
-            console.log(`[MQPFM]: Provider ${this.name_} can't transcode ${dataValues.jobId} for broadcasters : ${dataValues.broadcasters}`);
-          }
-          return false;
-        }
-        return this.createTask(dataValues);
-      })
       .then(
-        (task) => {
-          if (!task) {
+        (message) => {
+          if (!message) {
             //no task result ... do nothing
-            return task;
+            return false;
           }
+          console.log(`[MQPFM]: Provider ${this.name_}`, message);
+          //TODO create bidding method by provider (now apply bidding for first match)
+          this.sendMessage(message);
 
-          console.log(`[MQPFM]: Provider ${this.name_}`, task);
-
-          this.sendMessage({
-            type: MESSAGES.JOB_READY,
-            data: {
-              dataValues: {
-                jobId: dataValues.jobId,
-                mediaId: task.mediaId
-              }
-            }
-          });
-
-          return task;
+          return message;
         },
         (error) => {
           console.error(`[MQPFM]: error on message: ${type}`, error.stack);
           return this.sendMessage({
-            type: MESSAGES.JOB_ERROR,
+            type: MESSAGES.JOB.ERROR,
             error,
             data: {
               dataValues
@@ -86,6 +73,10 @@ class TranscodingProvider {
       );
   }
 
+  /**
+   * Send message to RabbitMQ
+   * @param message
+   */
   sendMessage (message) {
 
     console.log(`[MQPFM]: Provider ${this.name_} sendMessage: ${message.type}`);
@@ -102,17 +93,86 @@ class TranscodingProvider {
     return mq.send(message);
   }
 
-  canTranscodeByBroadcaster (broadcasters) {
+  /**
+   * Detect if provider can transcode Job
+   * @param data
+   * @returns {Promise.<TResult>}
+   */
+  canTranscodeByBroadcaster (data) {
     return Q()
       .then(() => {
-        return _.intersection(this.broadcasters_, broadcasters);
+        return _.intersection(this.broadcasters_, data.broadcasters);
+      }).then((canTranscode) => {
+        if (!canTranscode.length) {
+          if (_.isArray(canTranscode)) {
+            console.log(`[MQPFM]: Provider ${this.name_} can't transcode ${data.jobId} for broadcasters : ${data.broadcasters}`);
+          }
+          return false;
+        }
+        return {
+          type: MESSAGES.BID.OFFER,
+          data: {
+            dataValues: _.merge(data, {
+              providerName: this.name_
+            })
+          }
+        };
+        return true;
       });
   }
 
+  /**
+   * Message trancode Job accepted start encoding
+   * @param data
+   * @returns {Promise.<TResult>}
+   */
+  bidTranscodeAccepted (data) {
+    return Q()
+      .then(() => {
+        if (data.providerName !== this.name_) {
+          return false
+        }
+        return this.createTask(data);
+      })
+      .then((task) => {
+        if (!task) {
+          //no task result ... do nothing
+          return false;
+        }
+
+        return {
+          type: MESSAGES.JOB.READY,
+          data: {
+            dataValues: {
+              jobId: data.jobId,
+              mediaId: task.mediaId,
+              message: task.message
+            }
+          }
+        };
+      });
+  }
+
+  /**
+   * Get PF Provider Name
+   * @returns {string}
+   */
   name () {
     return this.name_;
   }
 
+  /**
+   * Get all PF Provider Presets List
+   * @returns {Array}
+   */
+  presets () {
+    return [];
+  }
+
+  /**
+   * Get PF Provider informations
+   * @returns {{name: string, status: ({status, status_code, incident}|*)}}
+   */
   infos () {
     return {
       name: this.name_,
@@ -120,10 +180,19 @@ class TranscodingProvider {
     };
   }
 
+  /**
+   * Get ALL PF Provider Jobs list
+   * @returns {Array}
+   */
   jobsList () {
     return [];
   }
 
+  /**
+   * Start encoding PF Job
+   * @param data
+   * @returns {*}
+   */
   createTask (data) {
     return Q()
       .then(() => {
@@ -132,6 +201,10 @@ class TranscodingProvider {
       });
   }
 
+  /**
+   * Get Statuts of PF API
+   * @returns {{status: string, status_code: string, incident: string}}
+   */
   healthCheck () {
     return {
       status: 'Ok',

@@ -1,7 +1,7 @@
 const TranscodingProvider = require('../transcodingProvider');
 const EncodingApi = require('./encodingcom.api.js');
 const Q = require('q');
-// Food is a base class
+/** @inheritdoc */
 class EncodingcomProvider extends TranscodingProvider {
 
   constructor (options) {
@@ -9,6 +9,7 @@ class EncodingcomProvider extends TranscodingProvider {
     this.api = new EncodingApi();
   }
 
+  /** @inheritdoc */
   createTask (data) {
     console.log(`[MQPFM]: Provider ${this.name_} createTask`);
     return Q()
@@ -21,23 +22,28 @@ class EncodingcomProvider extends TranscodingProvider {
         });
       }).then((res) => {
         return {
-          mediaId: res.MediaID
+          mediaId: res.MediaID,
+          message: res.message
         };
       });
   }
 
+  /** @inheritdoc */
   presets () {
     return this.api.getPresetsList();
   }
 
+  /** @inheritdoc */
   jobsList () {
     return this.api.getMediaList();
   }
 
+  /** @inheritdoc */
   getStatus (encodingId) {
     return this.api.getStatus(encodingId);
   }
 
+  /** @inheritdoc */
   healthCheck () {
     return this.api.healthCheck();
   }

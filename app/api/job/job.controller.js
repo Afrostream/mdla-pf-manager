@@ -116,7 +116,7 @@ module.exports.create = (req, res) => {
   let c = {
     job: null,
     message: {
-      type: PFManager.MESSAGES.JOB_CREATED
+      type: PFManager.MESSAGES.JOB.CREATED
     }
   };
 
@@ -126,7 +126,7 @@ module.exports.create = (req, res) => {
     })
     .then((message) => {
       c.message = message;
-      const insert = _.merge(req.body, {status: PFManager.JOB_STATUS.PENDING});
+      const insert = _.merge(req.body, {status: PFManager.STATUS.JOB.PENDING});
       return PFManagerJob.create(insert);
     })
     .then((job) => {
@@ -151,7 +151,7 @@ exports.update = (req, res) => {
   let c = {
     job: null,
     message: {
-      type: PFManager.MESSAGES.JOB_RESTART
+      type: PFManager.MESSAGES.JOB.RESTART
     }
   };
 
