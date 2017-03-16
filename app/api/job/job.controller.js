@@ -123,7 +123,7 @@ module.exports.pfStatus = function (req, res) {
       c.job = job;
       if (!job.providerName) {
         console.error(`No provider found for ${job._id}`);
-        return false
+        return false;
       }
       return PFManager.getProviderByName(c.job.providerName);
     })

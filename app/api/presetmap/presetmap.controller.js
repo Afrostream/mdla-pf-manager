@@ -4,8 +4,6 @@ const {
   PFManagerPresetMap
 } = rootRequire('sqldb');
 const utils = require('../utils');
-const _ = require('lodash');
-const Q = require('q');
 
 const getIncludedModels = [];
 

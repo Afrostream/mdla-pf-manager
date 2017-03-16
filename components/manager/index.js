@@ -132,16 +132,19 @@ class PFManager {
         if (!preset) {
           throw new Error(`[MQPFM]: [PFMANAGER] preset not found: ${data.presetId}`);
         }
+        let mappedPreset;
         switch (type) {
           case MESSAGES.PRESET.ERROR:
+            //
             preset.status = STATUS.PRESET.ERROR;
             preset.statusMessage = error.message;
             break;
           case MESSAGES.PRESET.READY:
+            //
             preset.status = STATUS.PRESET.READY;
             preset.statusMessage = data.message;
             //generete presetMap
-            const mappedPreset = PFManagerPresetMap.build({
+            mappedPreset = PFManagerPresetMap.build({
               name: data.presetName,
               providerName: data.provider,
               output: data.message
@@ -152,8 +155,8 @@ class PFManager {
             return mappedPreset.save().then((entity) => {
               return preset.addMapProvidersPresets(entity).then(() => preset.save());
             });
-            break;
           case MESSAGES.PRESET.UPDATED_STATUS:
+            //
             preset.status = data.status;
             break;
           default:

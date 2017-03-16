@@ -21,7 +21,7 @@ const getIncludedModels = [
     required: false,
     attributes: ['_id', 'status', 'progress', 'providerName', 'encodingId']
   }
-]
+];
 /**
  * Show PFManagerContent List
  *
@@ -49,7 +49,7 @@ module.exports.mediaInfo = function (req, res) {
         where: {
           _id: req.params.id
         }
-      })
+      });
     })
     .then(utils.handleEntityNotFound(res))
     .then(content => {

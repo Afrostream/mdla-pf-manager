@@ -129,7 +129,7 @@ class EncodingcomProvider extends TranscodingProvider {
     if (preset.container === 'm3u8') {
       format.output = 'advanced_hls';
       format.packFiles = false;
-      format.stream = this.buildStream(preset)
+      format.stream = this.buildStream(preset);
     } else {
       format.bitrate = `${preset.videoStreamConfig.bitrate}k`;
       format.profile = preset.videoStreamConfig.profile;
@@ -139,7 +139,7 @@ class EncodingcomProvider extends TranscodingProvider {
       format.audioVolume = 100;
       format.audioCodec = preset.audioStreamConfig.codec;
       format.videoCodec = preset.videoStreamConfig.codec;
-      format.size = this.getSize(preset.videoStreamConfig.width, preset.videoStreamConfig.height)
+      format.size = this.getSize(preset.videoStreamConfig.width, preset.videoStreamConfig.height);
     }
     return format;
   }
@@ -160,7 +160,7 @@ class EncodingcomProvider extends TranscodingProvider {
   }
 
   getSize (width = 0, height = 0) {
-    return width + 'x' + height
+    return width + 'x' + height;
   }
 
   /** @inheritdoc */

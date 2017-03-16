@@ -4,8 +4,8 @@ const {
   PFManagerPreset,
   PFManagerProfile
 } = rootRequire('sqldb');
-const sqldb = rootRequire('sqldb');
 const utils = require('../utils');
+const _ = require('lodash');
 
 const getIncludedModels = [
   {
