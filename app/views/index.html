@@ -1,28 +1,31 @@
 <!doctype html >
-<html ng-app="clientPF">
+<html>
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
-            integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
-            crossorigin="anonymous"></script>
-    <!-- Latest compiled and minified CSS -->
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
     <style>
-        .btn {
-            margin: 0.2em;
+        .app {
+            height: 100%;
+        }
+
+        md-sidenav {
+            width: 200px;
+            height: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+
+        md-content {
+            background-color: #f1f1f1;
+            height: 100%;
+            padding: 20px;
         }
     </style>
+
+
 </head>
-<body ng-controller="ClientPFController">
-<h1>MNDL PF API</h1>
+<body>
+
+<!--<h1>MNDL PF API</h1>
 <div id="app">
     <div class="container">
         <div class="row">
@@ -44,6 +47,17 @@
                             {{ provider._id }}
                             {{provider.name }}
                             <span ng-repeat="bc in provider.bradcasters">{{ bc.name }}</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="panel-heading"><h3 class="panel-title">Profiles</h3></div>
+                        <button class="btn btn-primary" ng-repeat="profile in profiles">{{ profile.name }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -97,6 +111,7 @@
                                             <a href="/api/jobs/{{job._id}}/status" target="_self">(show job provider
                                                 infos)</a>
                                         </label>
+                                        Job {{job.status}} on {{ job.providerName }}
                                         <div class="progress text-center">
                                             <div class="progress-bar" role="progressbar"
                                                  aria-valuenow="getProgressStatus(job)"
@@ -117,9 +132,9 @@
             </div>
         </div>
     </div>
-</div>
+</div>-->
 <script>
-  angular.module('clientPF', [])
+  angular.module('clientPF', ['ngMaterial'])
     .factory('$socket', function ($rootScope) {
       var socket = io.connect();
       return {
@@ -143,7 +158,13 @@
         }
       };
     })
-    .controller('ClientPFController', ['$scope', '$http', '$socket', function ($scope, $http, $socket) {
+    .controller('ClientPFController', function ($scope, $http, $socket, $mdSidenav, $log) {
+
+      $scope.toggleLeft = buildDelayedToggler('left');
+      $scope.toggleRight = buildToggler('right');
+      $scope.isOpenRight = function () {
+        return $mdSidenav('right').isOpen();
+      };
 
       $socket.on('pfmanager.job.restart', function (data) {
         console.log('pfmanager.job.restart', data);
@@ -174,11 +195,18 @@
       $scope.broadcasters = [];
       $scope.providers = [];
       $scope.contents = [];
+      $scope.profiles = [];
+
+      $http.get('api/profiles')
+        .then(function (response) {
+          $scope.profiles = response.data;
+        });
 
       $http.get('api/broadcasters')
         .then(function (response) {
           $scope.broadcasters = response.data;
         });
+
       $http.get('api/providers')
         .then(function (response) {
           $scope.providers = response.data;
@@ -259,7 +287,7 @@
       };
 
       $scope.getContent()
-    }]);
+    });
 
 </script>
 </body>

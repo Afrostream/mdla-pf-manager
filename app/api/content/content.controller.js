@@ -7,6 +7,21 @@ const PFManagerContent = sqldb.PFManagerContent;
 const PFManagerBroadcaster = sqldb.PFManagerBroadcaster;
 const PFManagerJob = sqldb.PFManagerJob;
 const mediainfo = require('mediainfoq');
+
+const getIncludedModels = [
+  {
+    model: PFManagerBroadcaster,
+    as: 'broadcasters',
+    required: false,
+    attributes: ['_id', 'name']
+  },
+  {
+    model: PFManagerJob,
+    as: 'jobs',
+    required: false,
+    attributes: ['_id', 'status', 'progress', 'providerName', 'encodingId']
+  }
+]
 /**
  * Show PFManagerContent List
  *
@@ -15,20 +30,7 @@ const mediainfo = require('mediainfoq');
  */
 module.exports.index = function (req, res) {
   return PFManagerContent.findAll({
-    include: [
-      {
-        model: PFManagerBroadcaster,
-        as: 'broadcasters',
-        required: false,
-        attributes: ['_id', 'name']
-      },
-      {
-        model: PFManagerJob,
-        as: 'jobs',
-        required: false,
-        attributes: ['_id', 'status', 'progress', 'encodingId']
-      }
-    ]
+    include: getIncludedModels
   })
     .then(utils.responseWithResult(req, res, 201))
     .catch(res.handleError());
@@ -43,15 +45,15 @@ module.exports.index = function (req, res) {
 module.exports.mediaInfo = function (req, res) {
   Q()
     .then(() => {
-      const {
-        url,
-        //username,
-        //password,
-        //formUrl,
-        //isSaving
-      } = req.query;
-
-      return mediainfo(url);
+      return PFManagerContent.find({
+        where: {
+          _id: req.params.id
+        }
+      })
+    })
+    .then(utils.handleEntityNotFound(res))
+    .then(content => {
+      return mediainfo(content.contentUrl);
     })
     .then(mediaInfo => {
       if (!mediaInfo || !mediaInfo.length) {
@@ -82,20 +84,7 @@ module.exports.show = function (req, res) {
     where: {
       _id: req.params.id
     },
-    include: [
-      {
-        model: PFManagerBroadcaster,
-        as: 'broadcasters',
-        required: false,
-        attributes: ['_id', 'name']
-      },
-      {
-        model: PFManagerJob,
-        as: 'jobs',
-        required: false,
-        attributes: ['_id', 'status', 'progress', 'encodingId']
-      }
-    ]
+    include: getIncludedModels
   };
 
   PFManagerContent.find(queryOptions)
@@ -157,13 +146,13 @@ exports.update = (req, res) => {
   PFManagerContent.find({
     where: {
       _id: req.params.id
-    }
+    }, include: getIncludedModels
   })
     .then(utils.handleEntityNotFound(res))
-    .then(utils.addBroadcasters(req.body))
     .then((entity) => {
       return entity.updateAttributes(req.body);
     })
+    .then(utils.addBroadcasters(req.body))
     .then(utils.responseWithResult(req, res))
     .catch(res.handleError());
 };

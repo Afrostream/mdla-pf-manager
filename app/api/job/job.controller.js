@@ -120,15 +120,22 @@ module.exports.pfStatus = function (req, res) {
     })
     .then(utils.handleEntityNotFound(res))
     .then((job) => {
-      if (!job.providerName) {
-        throw new Error(`No provider found for ${job._id}`);
-      }
       c.job = job;
+      if (!job.providerName) {
+        console.error(`No provider found for ${job._id}`);
+        return false
+      }
       return PFManager.getProviderByName(c.job.providerName);
     })
     .then((provider) => {
       if (!provider) {
-        throw new Error(`No provider found for ${c.job._id}`);
+        c.message = {
+          type: PFManager.MESSAGES.JOB.RESTART
+        };
+        return prepareJobMessage(c.job.contentId, c.message).then((message) => {
+          c.message = message;
+          return sendJobMessage(c.job, c.message);
+        });
       }
       return provider.getStatus(c.job.encodingId);
     })
@@ -150,7 +157,7 @@ module.exports.create = (req, res) => {
   let c = {
     job: null,
     message: {
-      type: PFManager.MESSAGES.JOB.CREATED
+      type: PFManager.MESSAGES.JOB.CREATE
     }
   };
 

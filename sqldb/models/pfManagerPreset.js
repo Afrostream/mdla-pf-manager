@@ -1,4 +1,6 @@
 'use strict';
+const ManagerConstants = rootRequire('components/manager/constants');
+
 module.exports = function (sequelize, DataTypes) {
   const PFManagerPreset = sequelize.define('PFManagerPreset', {
     _id: {
@@ -8,14 +10,16 @@ module.exports = function (sequelize, DataTypes) {
       unique: true,
       autoIncrement: true
     },
-    name: DataTypes.STRING(32),
-    type: DataTypes.STRING(32),
-    capabilities: DataTypes.JSON,
-    health: DataTypes.JSON,
-    active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
+    status: {
+      type: DataTypes.STRING(32),
+      defaultValue: ManagerConstants.STATUS.PRESET.PENDING
     },
+    statusMessage: DataTypes.JSON,
+    name: DataTypes.STRING(128),
+    description: DataTypes.TEXT,
+    container: DataTypes.STRING(DataTypes.ENUM('m3u8', 'mp4', 'mpd', 'webm')),
+    profile: DataTypes.STRING(DataTypes.ENUM('high', 'main', 'baseline', 'hq')),
+    rateControl: DataTypes.STRING(DataTypes.ENUM('VBR', 'CBR')), //variable bitrate|contant bitrate
     createdAt: {
       type: DataTypes.DATE,
       allowNull: true,

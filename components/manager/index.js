@@ -1,12 +1,16 @@
+'use strict';
+
+const {
+  PFManagerJob,
+  PFManagerPreset,
+  PFManagerPresetMap
+} = rootRequire('sqldb');
+
 const {EncodingcomProvider, BitmovinProvider, TranscodingProvider} = require('./providers');
 const Q = require('q');
 const _ = require('lodash');
 const mqPF = require('./mqPF');
 const {STATUS, MESSAGES} = require('./constants');
-
-const sqldb = rootRequire('sqldb');
-const PFManagerJob = sqldb.PFManagerJob;
-
 class PFManager {
 
   constructor () {
@@ -40,6 +44,7 @@ class PFManager {
         dataValues = {}
       }
     } = message;
+
     Q()
       .then(() => {
         switch (type) {
@@ -47,6 +52,9 @@ class PFManager {
           case MESSAGES.JOB.READY:
           case MESSAGES.JOB.UPDATED_STATUS:
             return this.updateJob(type, dataValues, error);
+          case MESSAGES.PRESET.ERROR:
+          case MESSAGES.PRESET.READY:
+            return this.updatePreset(type, dataValues, error);
           case MESSAGES.BID.OFFER:
             return this.onBidOffer(dataValues);
           default:
@@ -102,6 +110,59 @@ class PFManager {
         console.log(`[MQPFM]: [PFMANAGER] job updated: ${data.jobId} ${type}`);
 
         return job.save();
+      });
+  }
+
+  /**
+   * Preset status Updated from MQ
+   * @param type
+   * @param data
+   * @param error
+   * @returns {Promise.<TResult>}
+   */
+  updatePreset (type, data, error) {
+    return Q()
+      .then(() => {
+        return PFManagerPreset.find({
+          where: {
+            _id: data.presetId
+          }
+        });
+      }).then((preset) => {
+        if (!preset) {
+          throw new Error(`[MQPFM]: [PFMANAGER] preset not found: ${data.presetId}`);
+        }
+        switch (type) {
+          case MESSAGES.PRESET.ERROR:
+            preset.status = STATUS.PRESET.ERROR;
+            preset.statusMessage = error.message;
+            break;
+          case MESSAGES.PRESET.READY:
+            preset.status = STATUS.PRESET.READY;
+            preset.statusMessage = data.message;
+            //generete presetMap
+            const mappedPreset = PFManagerPresetMap.build({
+              name: data.presetName,
+              providerName: data.provider,
+              output: data.message
+            });
+
+            console.log('mappedPreset', mappedPreset);
+            //inject presetMap
+            return mappedPreset.save().then((entity) => {
+              return preset.addMapProvidersPresets(entity).then(() => preset.save());
+            });
+            break;
+          case MESSAGES.PRESET.UPDATED_STATUS:
+            preset.status = data.status;
+            break;
+          default:
+            return false;
+        }
+
+        console.log(`[MQPFM]: [PFMANAGER] preset updated: ${data.presetId} ${type}`);
+
+        return preset.save();
       });
   }
 

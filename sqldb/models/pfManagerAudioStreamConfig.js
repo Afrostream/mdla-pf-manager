@@ -1,9 +1,6 @@
 'use strict';
-
-const ManagerConstants = rootRequire('components/manager/constants');
-
 module.exports = function (sequelize, DataTypes) {
-  const PFManagerJob = sequelize.define('PFManagerJob', {
+  const PFManagerAudioStreamConfig = sequelize.define('PFManagerAudioStreamConfig', {
     _id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -11,18 +8,12 @@ module.exports = function (sequelize, DataTypes) {
       unique: true,
       autoIncrement: true
     },
-    status: {
-      type: DataTypes.STRING(32),
-      defaultValue: ManagerConstants.STATUS.JOB.PENDING
-    },
-    statusMessage: DataTypes.JSON,
-    progress: {
-      type: DataTypes.FLOAT,
+    bitrate: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 400
     },
-    providerName: DataTypes.STRING(255),
-    encodingId: DataTypes.STRING(255),
+    codec: DataTypes.STRING(DataTypes.ENUM('aac', 'mp3')), //TODO map all codecs list
     createdAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -35,5 +26,5 @@ module.exports = function (sequelize, DataTypes) {
     }
   });
 
-  return PFManagerJob;
+  return PFManagerAudioStreamConfig;
 };

@@ -5,10 +5,17 @@
 const MESSAGES = {
   JOB: {
     ERROR: 'pfmanager.job.error',
-    CREATED: 'pfmanager.job.created',
+    CREATE: 'pfmanager.job.create',
     RESTART: 'pfmanager.job.restart',
     READY: 'pfmanager.job.ready',
     STARTED: 'pfmanager.job.started',
+    REMOVED: 'pfmanager.job.removed',
+    UPDATED_STATUS: 'pfmanager.job.updated.status'
+  },
+  PRESET: {
+    ERROR: 'pfmanager.preset.error',
+    CREATE: 'pfmanager.preset.create',
+    READY: 'pfmanager.preset.ready',
     REMOVED: 'pfmanager.job.removed',
     UPDATED_STATUS: 'pfmanager.job.updated.status'
   },
@@ -23,6 +30,11 @@ const MESSAGES = {
  * @type {{JOB: {PENDING: string, DOWNLOADING: string, READY: string, WAITING: string, PREPROCESSING: string, RUNNING: string, SAVING: string, POSTPROCESSING: string, COMPLETE: string, CANCELLED: string, ERROR: string, SOMEOTHERSTATUS: string}}}
  */
 const STATUS = {
+  PRESET: {
+    PENDING: 'pending',
+    ERROR: 'error',
+    READY: 'ready'
+  },
   JOB: {
     PENDING: 'pending',//Added to pipeline
     DOWNLOADING: 'downloading',//Download file to current PF
@@ -34,7 +46,7 @@ const STATUS = {
     POSTPROCESSING: 'postprocessing',//Saving file output (Saving)
     COMPLETE: 'complete',//Transcode Finished
     CANCELLED: 'cancelled',//Cancelled from user
-    ERROR: 'error',//Error (see Job.statusMessage
+    ERROR: 'error',//Error (see Job.statusMessage)
     SOMEOTHERSTATUS: 'someotherstatus',//Some Other Status from current PF...
   }
 };

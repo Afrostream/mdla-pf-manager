@@ -28,7 +28,6 @@ class TranscodingProvider {
    * }
    */
   onMessage (message) {
-
     const {
       type,
       data: {
@@ -39,8 +38,10 @@ class TranscodingProvider {
     Q()
       .then(() => {
         switch (type) {
-          case MESSAGES.JOB.CREATED:
+          case MESSAGES.JOB.CREATE:
             return this.canTranscodeByBroadcaster(dataValues);
+          case MESSAGES.PRESET.CREATE:
+            return this.tryCreatePreset(dataValues);
           case MESSAGES.JOB.RESTART:
           case MESSAGES.BID.ACCEPTED:
             return this.bidTranscodeAccepted(dataValues);
@@ -63,9 +64,10 @@ class TranscodingProvider {
           return message;
         },
         (error) => {
-          console.error(`[MQPFM]: error on message: ${type}`, error.stack);
+          console.log(`[MQPFM]: error on message receive: type = ${type}`, error.stack, dataValues);
+          const errorType = type.replace(/\.[^\.]+$/, '.error');//replace original type by error
           return this.sendMessage({
-            type: MESSAGES.JOB.ERROR,
+            type: errorType,//replace original type by error
             error,
             data: {
               dataValues
@@ -117,6 +119,38 @@ class TranscodingProvider {
             dataValues: _.merge(data, {
               providerName: this.name_
             })
+          }
+        };
+      });
+  }
+
+  /**
+   * Try provider can create Preset
+   * @param data
+   * @returns {Promise.<TResult>}
+   */
+  tryCreatePreset (data) {
+    return Q()
+      .then(() => {
+        return this.createPreset(data);
+      })
+      .then((task) => {
+        if (!task) {
+          //no task result ... do nothing
+          return false;
+        }
+
+        const dataValues = _.merge(data, {
+          presetId: data.presetId,
+          presetName: data.presetName,
+          message: task.message,
+          provider: this.name_
+        });
+
+        return {
+          type: MESSAGES.PRESET.READY,
+          data: {
+            dataValues
           }
         };
       });
@@ -191,7 +225,7 @@ class TranscodingProvider {
             console.error(`[PFManager]: error on message: ${data.type} job ${data.jobId}`, err.stack);
             clearInterval(intervalId);
           });
-    }, 5000);
+    }, 20000);
   }
 
   /**
@@ -271,6 +305,19 @@ class TranscodingProvider {
     return Q()
       .then(() => {
         console.log(`[MQPFM]: Provider ${this.name_} createTask ${data}`);
+        return false;
+      });
+  }
+
+  /**
+   * Create new Preset on Provider
+   * @param data
+   * @returns {*}
+   */
+  createPreset (data) {
+    return Q()
+      .then(() => {
+        console.log(`[MQPFM]: Provider ${this.name_} createPreset ${data}`);
         return false;
       });
   }

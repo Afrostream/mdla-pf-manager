@@ -31,8 +31,17 @@ class EncodingApi {
 
   addMedia ({source, format}) {
     const params = {
-      action: 'addmedia',
+      action: 'AddMedia',
       'source': source,
+      'format': format
+    };
+    return this.request(params);
+  }
+
+  savePreset ({name, format}) {
+    const params = {
+      action: 'SavePreset',
+      'name': name,
       'format': format
     };
     return this.request(params);
@@ -40,7 +49,7 @@ class EncodingApi {
 
   restartMedia ({mediaId}) {
     const params = {
-      action: 'restartmedia',
+      action: 'RestartMedia',
       mediaid: mediaId
     };
     return this.request(params);
@@ -48,7 +57,7 @@ class EncodingApi {
 
   cancelMedia ({mediaId}) {
     const params = {
-      action: 'restartmedia',
+      action: 'RestartMedia',
       mediaid: mediaId
     };
     return this.request(params);
@@ -71,7 +80,14 @@ class EncodingApi {
   }
 
   mergeParams (params) {
-    let defaultParams = {query: {'userid': this.userId, 'userkey': this.userKey}};
+    let defaultParams = {
+      query: {
+        'userid': this.userId,
+        'userkey': this.userKey,
+        //TODO get request region and transcode near this one
+        //'region': 'eu-central-1' //[us-east-1|us-east-2|us-west-1|us-west-2|eu-west-1|eu-central-1|ap-southeast-1|ap-southeast-2|ap-northeast-1|sa-east-1]
+      }
+    };
     defaultParams.query = _.merge(defaultParams.query, params);
     return 'json=' + JSON.stringify(defaultParams);
   }
